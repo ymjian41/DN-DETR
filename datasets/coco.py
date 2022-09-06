@@ -278,3 +278,33 @@ def build(image_set, args):
 
     return dataset
 
+def build_your_dataset(image_set, args):
+    root = Path(args.coco_path)
+    # assert root.exists(), f'provided COCO path {root} does not exist'
+    # mode = 'instances'
+    PATHS = {
+        "train": (root / "train", root / "annotations" / f'train.json'),
+        "val": (root / "val", root / "annotations" / f'val.json'),
+    }
+
+
+    # add some hooks to datasets
+    aux_target_hacks_list = None
+    img_folder, ann_file = PATHS[image_set]
+
+    try:
+        strong_aug = args.strong_aug
+    except:
+        strong_aug = False
+
+    try:
+        fix_size = args.fix_size
+    except:
+        fix_size = False
+    dataset = CocoDetection(img_folder, ann_file, 
+            transforms=make_coco_transforms(image_set, fix_size=fix_size, strong_aug=strong_aug, args=args), 
+            return_masks=args.masks,
+            aux_target_hacks=aux_target_hacks_list,
+        )
+
+    return dataset

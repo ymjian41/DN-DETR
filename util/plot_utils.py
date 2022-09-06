@@ -55,6 +55,8 @@ def plot_logs(logs, fields=('class_error', 'loss_bbox_unscaled', 'mAP'), ewm_col
     fig, axs = plt.subplots(ncols=len(fields), figsize=(16, 5))
 
     for df, color in zip(dfs, sns.color_palette(n_colors=len(logs))):
+        df = df.drop(columns=['epoch_time'])
+
         for j, field in enumerate(fields):
             if field == 'mAP':
                 coco_eval = pd.DataFrame(
@@ -76,6 +78,7 @@ def plot_logs(logs, fields=('class_error', 'loss_bbox_unscaled', 'mAP'), ewm_col
             ax.legend([f'train', f'test'])
             ax.set_title(field)
 
+    plt.show()
     return fig, axs
 
 def plot_precision_recall(files, naming_scheme='iter'):
