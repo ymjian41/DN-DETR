@@ -2,7 +2,7 @@ from util.plot_utils import plot_logs
 from pathlib import Path
 
 # log_directory = [Path('outputs/R50_scene_test/trial_2')]
-log_directory = [Path('/home/ymjian/DN-DETR/exps/image_based_auxiliary_decoder')]
+log_directory = [Path('/home/ymjian/DN-DETR/exps/scene_based_auxiliary_decoder')]
 
 # solid lines are training results,
 # dashed lines are validation results.

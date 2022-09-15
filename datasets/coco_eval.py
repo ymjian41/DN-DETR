@@ -239,7 +239,10 @@ def evaluate(self):
 
     self._prepare()
     # loop through images, area range, max detection number
-    catIds = p.catIds if p.useCats else [-1]
+    catIds = p.catIds if p.useCats else [-1] # original
+    # catIds = [1,2,3,4,6,8] # AD related catId
+    # print('Hello')
+    # print(catIds)
 
     if p.iouType == 'segm' or p.iouType == 'bbox':
         computeIoU = self.computeIoU
