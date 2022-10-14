@@ -513,6 +513,7 @@ class MLP(nn.Module):
 def build_dab_deformable_detr(args):
     num_classes = 20 if args.dataset_file != 'coco' else 91
     if args.dataset_file == 'ford': num_classes = 15
+    if args.dataset_file == 'ford': num_classes = 27
     if args.dataset_file == "coco_panoptic":
         num_classes = 250
     device = torch.device(args.device)
