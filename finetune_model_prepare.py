@@ -72,12 +72,22 @@ def viewModel(model):
     # check shape
     # print(checkpoint["model"]["transformer.decoder.layers.5.self_attn.out_proj.weight"].shape)
 
+def model_num_params(path):
+    checkpoint = torch.load(path)
+    model = checkpoint["model"]
+    # print()
+    # model.load_state_dict(model)
+    print(model.keys())
+
+    print('type: ', type(model))
+
 # viewModel('r50_deformable_detr-checkpoint')
 # viewModel('r50_deformable_detr-checkpoint_no-class-head')
 
 # viewModel('exps/R50_fully_vis/checkpoint')
 
 # viewModel('dn_deformable_detr_no-class-head')
-prepare_no_class('checkpoint0049')
+# prepare_no_class('checkpoint0049')
+model_num_params('/mnt/workspace/users/ymjian/test/exps/fine_tune_test/image_based/dn_d_detr_from_scratch/checkpoint.pth')
 
 print('done')
