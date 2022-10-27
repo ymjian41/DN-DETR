@@ -27,7 +27,7 @@ def get_args_parser():
     parser.add_argument('--lr_backbone', default=1e-5, type=float, 
                         help='learning rate for backbone')
 
-    parser.add_argument('--batch_size', default=2, type=int)
+    parser.add_argument('--batch_size', default=1, type=int)
     parser.add_argument('--weight_decay', default=1e-4, type=float)
     parser.add_argument('--epochs', default=50, type=int)
     parser.add_argument('--lr_drop', default=40, type=int)
@@ -193,12 +193,13 @@ model, criterion, postprocessors = build_model_main(args)
 
 checkpoint = torch.load(model_checkpoint_path)
 model.load_state_dict(checkpoint['model'])
-model.cuda()
-model.eval()
+model = model.cuda()
+# model.eval()
 model = model.to(device)
+print("device model: ", device)
 
-n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
-print("parameters:", n_parameters)
+# n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
+# print("parameters:", n_parameters)
 
 # model.eval()
 # id2name = {1: 'person', 2: 'bicycle', 3: 'car', 4: 'motorcycle', 5: 'airplane', 6: 'bus', 7: 'train', 8: 'truck', 9: 'boat', 10: 'traffic light', 11: 'fire hydrant', 13: 'stop sign', 14: 'parking meter', 15: 'bench', 16: 'bird', 17: 'cat', 18: 'dog', 19: 'horse', 20: 'sheep', 21: 'cow', 22: 'elephant', 23: 'bear', 24: 'zebra', 25: 'giraffe', 27: 'backpack', 28: 'umbrella', 31: 'handbag', 32: 'tie', 33: 'suitcase', 34: 'frisbee', 35: 'skis', 36: 'snowboard', 37: 'sports ball', 38: 'kite', 39: 'baseball bat', 40: 'baseball glove', 41: 'skateboard', 42: 'surfboard', 43: 'tennis racket', 44: 'bottle', 46: 'wine glass', 47: 'cup', 48: 'fork', 49: 'knife', 50: 'spoon', 51: 'bowl', 52: 'banana', 53: 'apple', 54: 'sandwich', 55: 'orange', 56: 'broccoli', 57: 'carrot', 58: 'hot dog', 59: 'pizza', 60: 'donut', 61: 'cake', 62: 'chair', 63: 'couch', 64: 'potted plant', 65: 'bed', 67: 'dining table', 70: 'toilet', 72: 'tv', 73: 'laptop', 74: 'mouse', 75: 'remote', 76: 'keyboard', 77: 'cell phone', 78: 'microwave', 79: 'oven', 80: 'toaster', 81: 'sink', 82: 'refrigerator', 84: 'book', 85: 'clock', 86: 'vase', 87: 'scissors', 88: 'teddy bear', 89: 'hair drier', 90: 'toothbrush'}
@@ -211,6 +212,7 @@ vslzr = COCOVisualizer()
 
 from PIL import Image
 import datasets.transforms as T
+# import torchvision.transforms as T
 
 image_folder = "/mnt/workspace/users/ymjian/Shuttle_Deepen_Data_ImgBased_front_cam/time_measure"
 files = os.listdir(image_folder)
@@ -229,13 +231,22 @@ for file in files:
         T.ToTensor(),
         T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
-    image, _ = transform(image, None).unsqueeze(0)
-    image.to(device)
+    image, _ = transform(image, None)
+    # image = image.unsqueeze(0)
+    # print("image: ", image.shape)
+    # print("device image: ", device)
+    # image.to(device)
+    image = image.cuda()
+    # image.to(device)
+    # print("image type: ", image.type())
 
     # predict images
     start = time.time()
     # print("device: ", image.device())
     output, _ = model(image[None],0)
+    # print("type output: ", output.keys()) # type output:  dict_keys(['pred_logits', 'pred_boxes', 'aux_outputs'])
+    # print("out ", output["pred_logits"].type())
+    # print("out ", output["pred_boxes"].type())
     output = postprocessors['bbox'](output, torch.Tensor([[1.0, 1.0]]))[0]
     # visualize outputs
     thershold = 0.3 # set a thershold
