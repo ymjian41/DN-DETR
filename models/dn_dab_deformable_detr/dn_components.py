@@ -57,10 +57,10 @@ def prepare_for_dn(dn_args, tgt_weight, embedweight, batch_size, training, num_q
     :return:
     """
 
-    if training:
-        targets, scalar, label_noise_scale, box_noise_scale, num_patterns = dn_args
-    else:
-        num_patterns = dn_args
+    # if training:
+    #     targets, scalar, label_noise_scale, box_noise_scale, num_patterns = dn_args
+    # else:
+    num_patterns = dn_args
 
     if num_patterns == 0:
         num_patterns = 1
