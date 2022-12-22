@@ -182,26 +182,22 @@ def build_model_main(args):
     return model, criterion, postprocessors
 
 
-# model_config_path = "config.json" # change the path of the model config
-# model_checkpoint_path = "checkpoint_optimized_44.7ap.pth" # change the path of the model checkpoint
 parser = argparse.ArgumentParser('DETR training and evaluation script', parents=[get_args_parser()])
 args = parser.parse_args()
 
-model_checkpoint_path = "/mnt/workspace/users/ymjian/test/exps/fine_tune_test/image_based/dn_d_detr_from_scratch/checkpoint.pth"
+model_checkpoint_path = "/path/to/checkpoint/file"
 device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
 model, criterion, postprocessors = build_model_main(args)
 
 checkpoint = torch.load(model_checkpoint_path)
 model.load_state_dict(checkpoint['model'])
 model = model.cuda()
-# model.eval()
 model = model.to(device)
 print("device model: ", device)
 
-# n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
-# print("parameters:", n_parameters)
+n_parameters = sum(p.numel() for p in model.parameters() if p.requires_grad)
+print("parameters:", n_parameters)
 
-# model.eval()
 # id2name = {1: 'person', 2: 'bicycle', 3: 'car', 4: 'motorcycle', 5: 'airplane', 6: 'bus', 7: 'train', 8: 'truck', 9: 'boat', 10: 'traffic light', 11: 'fire hydrant', 13: 'stop sign', 14: 'parking meter', 15: 'bench', 16: 'bird', 17: 'cat', 18: 'dog', 19: 'horse', 20: 'sheep', 21: 'cow', 22: 'elephant', 23: 'bear', 24: 'zebra', 25: 'giraffe', 27: 'backpack', 28: 'umbrella', 31: 'handbag', 32: 'tie', 33: 'suitcase', 34: 'frisbee', 35: 'skis', 36: 'snowboard', 37: 'sports ball', 38: 'kite', 39: 'baseball bat', 40: 'baseball glove', 41: 'skateboard', 42: 'surfboard', 43: 'tennis racket', 44: 'bottle', 46: 'wine glass', 47: 'cup', 48: 'fork', 49: 'knife', 50: 'spoon', 51: 'bowl', 52: 'banana', 53: 'apple', 54: 'sandwich', 55: 'orange', 56: 'broccoli', 57: 'carrot', 58: 'hot dog', 59: 'pizza', 60: 'donut', 61: 'cake', 62: 'chair', 63: 'couch', 64: 'potted plant', 65: 'bed', 67: 'dining table', 70: 'toilet', 72: 'tv', 73: 'laptop', 74: 'mouse', 75: 'remote', 76: 'keyboard', 77: 'cell phone', 78: 'microwave', 79: 'oven', 80: 'toaster', 81: 'sink', 82: 'refrigerator', 84: 'book', 85: 'clock', 86: 'vase', 87: 'scissors', 88: 'teddy bear', 89: 'hair drier', 90: 'toothbrush'}
 id2name = {1: 'Car', 2: 'Truck', 3: 'Pedestrian', 4: 'Pedestrian_With_Object', 5: 'Trash Cans',
         6: 'Construction_Vehicle', 7: 'Bus', 8: 'Traffic_cones', 9: 'Wheeled_Pedestrian', 10: 'Bicycle',
@@ -212,9 +208,9 @@ vslzr = COCOVisualizer()
 
 from PIL import Image
 import datasets.transforms as T
-# import torchvision.transforms as T
 
-image_folder = "/mnt/workspace/users/ymjian/Shuttle_Deepen_Data_ImgBased_front_cam/time_measure"
+
+image_folder = "/path/to/images/for/inference"
 files = os.listdir(image_folder)
 number_of_images = 0
 detected_objects = 0
@@ -232,24 +228,12 @@ for file in files:
         T.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
     image, _ = transform(image, None)
-    # image = image.unsqueeze(0)
-    # print("image: ", image.shape)
-    # print("device image: ", device)
-    # image.to(device)
     image = image.cuda()
-    # image.to(device)
-    # print("image type: ", image.type())
 
     # predict images
-    start = time.time()
-    # print("device: ", image.device())
     output, _ = model(image[None],0)
-    # print("type output: ", output.keys()) # type output:  dict_keys(['pred_logits', 'pred_boxes', 'aux_outputs'])
-    # print("out ", output["pred_logits"].type())
-    # print("out ", output["pred_boxes"].type())
     output = postprocessors['bbox'](output, torch.Tensor([[1.0, 1.0]]))[0]
-    # visualize outputs
-    thershold = 0.3 # set a thershold
+    thershold = 0.7
 
     scores = output['scores']
     labels = output['labels']
@@ -262,11 +246,3 @@ for file in files:
         'size': torch.Tensor([image.shape[1], image.shape[2]]),
         'box_label': box_label
     }
-
-    total_t += time.time() - start
-    number_of_images += 1
-
-    # vslzr.visualize(image, pred_dict, savedir=None)
-print("total time: ", total_t)
-print("total image: ", number_of_images)
-print("FPS: ", number_of_images/total_t)
